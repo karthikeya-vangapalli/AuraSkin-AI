@@ -10,6 +10,7 @@
 .env.*
 *.env
 .env.local
+.env.*.local
 .env.development.local
 .env.test.local
 .env.production.local
@@ -18,9 +19,12 @@
 *.cert
 *.crt
 
-# Exception: Allow committed example/template configurations
+# Exception: Allow committed example/template configurations and public client build endpoints
 !.env.example
 !.env.*.example
+!*.env.example
+!frontend/.env.production
+!frontend/.env.production.example
 
 # ------------------------------------------------------------------------------
 # 2. Python Artifacts & Virtual Environments

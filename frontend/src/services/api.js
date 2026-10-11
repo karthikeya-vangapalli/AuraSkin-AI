@@ -1,15 +1,54 @@
 import axios from 'axios';
 
+// Microservice Base URLs with development fallbacks
+export const USER_SERVICE_URL = import.meta.env.VITE_USER_SERVICE_URL || 'http://localhost:8001';
+export const PROFILE_SERVICE_URL = import.meta.env.VITE_PROFILE_SERVICE_URL || 'http://localhost:8002';
+export const AI_SKIN_SERVICE_URL = import.meta.env.VITE_AI_SKIN_SERVICE_URL || 'http://localhost:8003';
+
+export const getServiceBaseUrl = (url = '') => {
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return '';
+  }
+  if (
+    url.startsWith('/api/v1/profile') || 
+    url.startsWith('/api/v1/lifestyle') || 
+    url.startsWith('/api/v1/progress')
+  ) {
+    return PROFILE_SERVICE_URL;
+  }
+  if (
+    url.startsWith('/api/v1/skin') || 
+    url.startsWith('/api/v1/ingredients') || 
+    url.startsWith('/api/v1/products')
+  ) {
+    return AI_SKIN_SERVICE_URL;
+  }
+  if (
+    url.startsWith('/api/v1/auth') || 
+    url.startsWith('/api/v1/users') || 
+    url.startsWith('/api/v1/clinical') || 
+    url.startsWith('/api/v1/admin')
+  ) {
+    return USER_SERVICE_URL;
+  }
+  return USER_SERVICE_URL;
+};
+
 const API = axios.create({
-  baseURL: '/',
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Request interceptor to auto-inject JWT Bearer token
+// Request interceptor to auto-inject JWT Bearer token and route microservice base URL
 API.interceptors.request.use(
   (config) => {
+    if (config.url && !config.url.startsWith('http://') && !config.url.startsWith('https://')) {
+      const serviceBase = getServiceBaseUrl(config.url);
+      if (serviceBase) {
+        config.baseURL = serviceBase;
+      }
+    }
     const token = localStorage.getItem('access_token') || localStorage.getItem('token');
     if (token) {
       config.headers = config.headers || {};

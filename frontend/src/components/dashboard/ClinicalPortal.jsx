@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Stethoscope, FileText, CheckCircle2, ChevronRight, X, Search, Activity, User, ShieldAlert, Sparkles, Printer, ChevronDown, ChevronUp } from 'lucide-react';
-import axios from 'axios';
+import API from '../../services/api';
 import Toast from '../common/Toast';
 
 export default function ClinicalPortal() {
@@ -20,14 +20,10 @@ export default function ClinicalPortal() {
   const fetchPatients = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
       const params = {};
       if (searchTerm.trim()) params.search = searchTerm.trim();
 
-      const res = await axios.get('/api/v1/clinical/patients', { 
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
+      const res = await API.get('/api/v1/clinical/patients', { params });
       setPatients(res.data);
       if (selectedPatient) {
         const updated = res.data.find(p => p.id === selectedPatient.id);
@@ -54,11 +50,9 @@ export default function ClinicalPortal() {
     }
     try {
       setSavingNote(true);
-      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-      await axios.post(
+      await API.post(
         `/api/v1/clinical/patients/${selectedPatient.id}/notes`,
-        { content: clinicalNotes.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { content: clinicalNotes.trim() }
       );
       
       const newEntry = {

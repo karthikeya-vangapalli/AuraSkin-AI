@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Compass, Users, Sparkles, Filter, Search, X, AlertTriangle, ShieldCheck, Printer, CheckCircle2, Check, UserCheck, ArrowRight } from 'lucide-react';
-import axios from 'axios';
+import API from '../../services/api';
 import Toast from '../common/Toast';
 
 export default function ConsultantPortal() {
@@ -21,15 +21,11 @@ export default function ConsultantPortal() {
   const fetchClients = async () => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
       const params = {};
       if (searchTerm.trim()) params.search = searchTerm.trim();
       if (selectedConcern && selectedConcern !== 'All') params.concern = selectedConcern;
 
-      const res = await axios.get('/api/v1/clinical/consultations/clients', { 
-        headers: { Authorization: `Bearer ${token}` },
-        params
-      });
+      const res = await API.get('/api/v1/clinical/consultations/clients', { params });
       setClients(res.data);
     } catch (err) {
       console.error("Failed to fetch clients", err);
@@ -49,11 +45,9 @@ export default function ConsultantPortal() {
     if (!recommendationText.trim() || !selectedClient) return;
     try {
       setSavingNote(true);
-      const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-      await axios.post(
+      await API.post(
         `/api/v1/clinical/consultations/${selectedClient.id}/recommendations`,
-        { content: recommendationText.trim() },
-        { headers: { Authorization: `Bearer ${token}` } }
+        { content: recommendationText.trim() }
       );
       
       const newRec = {

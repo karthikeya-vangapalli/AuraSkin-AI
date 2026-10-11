@@ -1,0 +1,14 @@
+# Frontend Local Environment & Artifacts
+node_modules/
+dist/
+dist-ssr/
+*.local
+.env.local
+.env.*.local
+.env.development.local
+.env.test.local
+
+# Allow committed production environment config and examples
+!.env.production
+!.env.production.example
+!.env.example
