@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Databases & Caching
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine
+    container_name: skin_postgres
+    restart: always
+    environment:
+      POSTGRES_DB: skin_user_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongodb:
+    image: mongo:7.0
+    container_name: skin_mongodb
+    restart: always
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: mongoadmin
+      MONGO_INITDB_ROOT_PASSWORD: mongopassword
+      MONGO_INITDB_DATABASE: skin_profile_db
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  redis:
+    image: redis:7-alpine
+    container_name: skin_redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+  # ---------------------------------------------------------------------------
+  # Microservices
+  # ---------------------------------------------------------------------------
+  user-service:
+    build:
+      context: ./backend/user-service
+    container_name: skin_user_service
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://postgres:postgrespassword@postgres:5432/skin_user_db
+      - SECRET_KEY=super-secret-jwt-key-change-in-production
+      - ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  profile-service:
+    build:
+      context: ./backend/profile-service
+    container_name: skin_profile_service
+    restart: always
+    ports:
+      - "8002:8002"
+    environment:
+      - MONGODB_URL=mongodb://mongoadmin:mongopassword@mongodb:27017/skin_profile_db?authSource=admin
+      - DATABASE_NAME=skin_profile_db
+      - SECRET_KEY=super-secret-jwt-key-change-in-production
+      - ALGORITHM=HS256
+    depends_on:
+      - mongodb
+
+  ai-skin-service:
+    build:
+      context: ./backend/ai-skin-service
+    container_name: skin_ai_service
+    restart: always
+    ports:
+      - "8003:8003"
+    environment:
+      - MODEL_MODE=development
+      - SECRET_KEY=super-secret-jwt-key-change-in-production
+      - ALGORITHM=HS256
+
+  # ---------------------------------------------------------------------------
+  # Frontend App
+  # ---------------------------------------------------------------------------
+  frontend:
+    build:
+      context: ./frontend
+    container_name: skin_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - user-service
+      - profile-service
+      - ai-skin-service
+
+volumes:
+  postgres_data:
+  mongodb_data:
