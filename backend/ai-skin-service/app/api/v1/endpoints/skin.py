@@ -161,6 +161,7 @@ from app.services.recommendation_engine import generate_recommendations
 from fastapi import Request
 import httpx
 
+@router.post("/assess-textual", response_model=TextualAssessmentResponse)
 @router.post("/skin/assess-textual", response_model=TextualAssessmentResponse)
 async def assess_textual(
     req: TextualAssessmentRequest, 

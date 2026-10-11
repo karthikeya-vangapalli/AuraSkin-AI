@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { lifestyleService } from '../../services/api';
+import { lifestyleService, clinicalService } from '../../services/api';
 import { useAuth } from '../../context/AuthContext';
 import { Droplet, Moon, Sun, Flame, MessageSquare, PlusCircle, History, Check, Stethoscope, Sparkles } from 'lucide-react';
 
@@ -59,14 +59,12 @@ export default function LifestyleTracker() {
   const [clinicalNotes, setClinicalNotes] = useState([]);
 
   const fetchNotes = async () => {
-      try {
-        const token = localStorage.getItem('access_token') || localStorage.getItem('token');
-        const { default: ax } = await import('axios');
-        const res = await ax.get('/api/v1/clinical/patients/me/notes', { headers: { Authorization: `Bearer ${token}` } });
-        setClinicalNotes(res.data);
-      } catch (err) {
-        console.error(err);
-      }
+    try {
+      const data = await clinicalService.getMyNotes();
+      setClinicalNotes(Array.isArray(data) ? data : []);
+    } catch (err) {
+      console.error('Failed to load clinical notes:', err);
+    }
   };
 
   useEffect(() => {

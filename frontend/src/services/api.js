@@ -236,6 +236,14 @@ export const progressService = {
   },
 };
 
+// Clinical Notes Service Endpoints (user-service)
+export const clinicalService = {
+  getMyNotes: async () => {
+    const response = await API.get('/api/v1/clinical/patients/me/notes');
+    return response.data;
+  },
+};
+
 export default API;
 export const aiSkinService = {
   assessTextual: async (data) => {
