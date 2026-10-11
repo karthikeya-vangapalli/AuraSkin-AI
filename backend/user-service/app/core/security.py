@@ -1,17 +1,28 @@
+import bcrypt
 from datetime import datetime, timedelta
 from typing import Any, Union, Dict, Optional
 from jose import jwt, JWTError, ExpiredSignatureError
-from passlib.context import CryptContext
 from fastapi import HTTPException, status
 from app.core.config import settings
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
 def get_password_hash(password: str) -> str:
-    return pwd_context.hash(password)
+    # bcrypt only handles up to 72 bytes
+    pwd_bytes = password.encode('utf-8')[:72]
+    salt = bcrypt.gensalt()
+    return bcrypt.hashpw(pwd_bytes, salt).decode('utf-8')
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        pwd_bytes = plain_password.encode('utf-8')[:72]
+        return bcrypt.checkpw(pwd_bytes, hashed_password.encode('utf-8'))
+    except Exception:
+        # Fallback to passlib if verifying legacy formats
+        try:
+            from passlib.context import CryptContext
+            pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+            return pwd_context.verify(plain_password, hashed_password)
+        except Exception:
+            return False
 
 def create_access_token(
     subject: Union[str, Any],
