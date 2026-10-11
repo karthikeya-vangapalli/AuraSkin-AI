@@ -3,7 +3,7 @@ import axios from 'axios';
 // Microservice Base URLs with development fallbacks
 export const USER_SERVICE_URL = import.meta.env.VITE_USER_SERVICE_URL || 'http://localhost:8001';
 export const PROFILE_SERVICE_URL = import.meta.env.VITE_PROFILE_SERVICE_URL || 'http://localhost:8002';
-export const AI_SKIN_SERVICE_URL = import.meta.env.VITE_AI_SKIN_SERVICE_URL || 'http://localhost:8003';
+export const AI_SKIN_SERVICE_URL = import.meta.env.VITE_AI_SKIN_SERVICE_URL || 'https://auraskin-ai-skin-service.onrender.com';
 
 export const getServiceBaseUrl = (url = '') => {
   if (url.startsWith('http://') || url.startsWith('https://')) {
@@ -184,7 +184,7 @@ export const lifestyleService = {
   },
 };
 
-// Ingredient Intelligence Service Endpoints (ai-skin-service :8003)
+// Ingredient Intelligence Service Endpoints (ai-skin-service)
 export const ingredientService = {
   analyze: async (ingredients, userAllergies = []) => {
     const response = await API.post('/api/v1/ingredients/analyze', {
@@ -195,7 +195,7 @@ export const ingredientService = {
   },
 };
 
-// Product Recommendation Engine Endpoints (ai-skin-service :8003)
+// Product Recommendation Engine Endpoints (ai-skin-service)
 export const recommendationService = {
   getRecommendations: async (skinProfile, budgetMax = 0, preferences = [], currentRoutineSteps = []) => {
     const response = await API.post('/api/v1/products/recommend', {
@@ -239,7 +239,14 @@ export const progressService = {
 export default API;
 export const aiSkinService = {
   assessTextual: async (data) => {
-    const response = await API.post('/api/v1/skin/assess-textual', data);
+    const token = localStorage.getItem('token') || localStorage.getItem('access_token');
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token && token !== 'undefined' && token !== 'null') {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const response = await API.post('/api/v1/skin/assess-textual', data, { headers });
     return response.data;
   }
 };

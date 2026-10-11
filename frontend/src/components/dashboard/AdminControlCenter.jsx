@@ -9,7 +9,7 @@ import Toast from '../common/Toast';
 
 const USER_SERVICE_BASE = import.meta.env.VITE_USER_SERVICE_URL || 'http://localhost:8001';
 const PROFILE_SERVICE_BASE = import.meta.env.VITE_PROFILE_SERVICE_URL || 'http://localhost:8002';
-const AI_SKIN_SERVICE_BASE = import.meta.env.VITE_AI_SKIN_SERVICE_URL || 'http://localhost:8003';
+const AI_SKIN_SERVICE_BASE = import.meta.env.VITE_AI_SKIN_SERVICE_URL || 'https://auraskin-ai-skin-service.onrender.com';
 
 export default function AdminControlCenter() {
   const [users, setUsers] = useState([]);

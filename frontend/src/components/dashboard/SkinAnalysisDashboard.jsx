@@ -115,12 +115,17 @@ export default function SkinAnalysisDashboard() {
 
       console.log('Sending payload:', payload);
 
-      const response = await fetch('http://localhost:8003/api/v1/skin/analyze', {
+      const aiSkinServiceUrl = import.meta.env.VITE_AI_SKIN_SERVICE_URL || 'https://auraskin-ai-skin-service.onrender.com';
+      const headers = {
+        'Content-Type': 'application/json',
+      };
+      if (token && token !== 'undefined' && token !== 'null') {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+
+      const response = await fetch(`${aiSkinServiceUrl}/api/v1/skin/analyze`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: token ? `Bearer ${token}` : '',
-        },
+        headers,
         body: JSON.stringify(payload),
       });
 
